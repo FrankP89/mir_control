@@ -27,7 +27,7 @@ class MIR:
     self.url=url
     self.headers={'Authorization':authorization,'Accept-Language':'en-US','Content-Type': 'application/json'}
     if(self.headers['Authorization']=='' or self.headers['Authorization']==None):
-            self.headers['Authorization']="Basic YWRtaW46OGM2OTc2ZTViNTQxMDQxNWJkZTkwOGJkNGRlZTE1ZGZiMTY3YTljODczZmM0YmI4YTgxZjZmMmFiNDQ4YTkxOA=="
+            self.headers['Authorization']="Basic YWRtaW46NzkzNWUyZGJkYzExMWZkYjhkOTExNjFjMzI3Y2UxNDhhMTRkZDc5MGUxM2Q1MWE5ZjFhMTk3ZTA0M2VhN2QwZg=="
     self.message_body={}
     self.response={}
     self.timeout=timeout
