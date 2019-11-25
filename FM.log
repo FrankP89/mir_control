@@ -1,0 +1,10 @@
+2019-11-25 16:12:39,465 Successfully connected with MIR
+2019-11-25 16:12:39,465 Index out of range. Getting all available data
+2019-11-25 16:12:39,465 Getting data for robot: 0
+2019-11-25 16:12:39,491 Data successfuly retrieved for robot:0
+2019-11-25 16:12:45,338 Pausing robot: 0
+2019-11-25 16:12:45,394 {u'joystick_low_speed_mode_enabled': False, u'mission_queue_url': None, u'mode_id': 7, u'moved': 3075.22, u'mission_queue_id': None, u'robot_name': u'MiR_S866', u'uptime': 23825, u'errors': [], u'unloaded_map_changes': False, u'distance_to_next_target': 0.0, u'serial_number': u'190200012000866', u'mode_key_state': u'idle', u'battery_percentage': 32.599998474121094, u'map_id': u'60589c8b-0220-11ea-8e70-94c691a73989', u'safety_system_muted': False, u'mission_text': u'Waiting for new missions...', u'velocity': {u'angular': 0.0, u'linear': 0.0}, u'state_text': u'Pause', u'state_id': 4, u'footprint': u'[[0.506,-0.32],[0.506,0.32],[-0.454,0.32],[-0.454,-0.32]]', u'user_prompt': None, u'allowed_methods': None, u'robot_model': u'MiR200', u'mode_text': u'Mission', u'session_id': u'6e408f68-968a-11e9-b7b8-94c691a73989', u'joystick_web_session_id': u'', u'battery_time_remaining': 31294, u'position': {u'y': 2.40439510345459, u'x': 2.1008219718933105, u'orientation': 54.935997009277344}}
+2019-11-25 16:12:45,394 Robot:0 successfully paused
+2019-11-25 16:12:45,394 Sending Delete command to url:http://192.168.12.20/api/v2.0.0/mission_queue
+2019-11-25 16:12:45,414 HTTP error occurred:401 Client Error: UNAUTHORIZED for url: http://192.168.12.20/api/v2.0.0/mission_queue
+2019-11-25 16:12:45,423 HTTP error occurred:401 Client Error: UNAUTHORIZED for url: http://192.168.12.20/api/v2.0.0/missions

@@ -343,7 +343,7 @@ class MIR:
             self.add_mission(index,mission_guid)
             self.ready(index)
         else:
-            print("Error updaing position in Mission")
+            print("Error updating position in Mission")
     except Exception as e:
         print(str(e))
         
@@ -363,7 +363,8 @@ class MIR:
             return False
         else:
             return response
-                                     
+
+                                    
   def main(self):
         while True:
             if self.initialized and self.run_main:
@@ -374,7 +375,11 @@ class MIR:
                     self.display_position()
                 except Exception as err_main:
                     print("Main Error:"+str(err_main))
+            else:
+                    break
 
-  
+  def terminate(self):
+        self.run_main = False
+
 
                         

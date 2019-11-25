@@ -2,6 +2,7 @@
 """
 
 @author: Yadunund Vijay, yadunund@gmail.com
+@contributor: Walter Pintor, walterpintor@gmail.com
 """
 
 from FM import MIR
@@ -29,16 +30,17 @@ if __name__=="__main__":
                 mir.ready()
             elif(arg==4):
                _val=input("Enter x,y,ori:")
-               val=[int(x) for x in _val.split(",")]
+               val=[float(x) for x in _val.split(",")]
                mir.move_to(0,val)
             elif(arg==5):
-                exit(0)
+               break 
+               #exit(0) 
 	      # mir.pause()		
             else:
                print("Invalid Option!")
-               exit(0)
+               break
             time.sleep(0.01)
     except Exception as e:
         print(str(e))
-        
-        
+                
+    
