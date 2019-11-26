@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 @author: Yadunund Vijay, yadunund@gmail.com
+@contributor: Walter Pintor, walterpintor@gmail.com
 
 Class definitions for 
     1. creating objects to connect to MIR and Husky AGVs
@@ -22,7 +23,7 @@ import sys
 logging.basicConfig(filename='FM.log', format='%(asctime)s %(message)s', filemode='w', level=logging.INFO)
 
 class MIR:
-  def __init__(self, url="http://192.168.12.241", authorization="",timeout=5,rate=0.5,fleet=True,run_main=False,mission="move"):
+  def __init__(self, url="http://192.168.12.20", authorization="",timeout=5,rate=0.5,fleet=False,run_main=False,mission="move"):
     
     self.url=url
     self.headers={'Authorization':authorization,'Accept-Language':'en-US','Content-Type': 'application/json'}
@@ -311,34 +312,49 @@ class MIR:
         self.reset_queue(index)
         data= {'orientation':pose[2],'pos_x':pose[0],'pos_y':pose[1]}
         response=self._get(url)
+        #print("This is the response: ", response.json())
         if(response):
             for mission in response.json():
                 #find the active mission guid
+                print("This is mission: ",mission) 
+                print("This is self mission: ",self.mission)                
                 if(mission['name']==self.mission):
-                    #print(mission)
+                    
                     mission_guid=mission['guid']
+                    print("This is mission[guid]: ",mission_guid) 
+                    url_pos = url+"/positions"
                     url=url+"/"+mission_guid+"/actions"
                     #find the action guid containing move command
                     action_response=self._get(url)
+                    print("This is action response: ",action_response.json())
                     if(action_response):
                         for action in action_response.json():
                             if(action['action_type']=='move'):
-                                #get guid of positon inside move command
-                                #print(action)
+                                #get guid of position inside move command
+                                #print("This is action: ",action)
+                                print("This is action response: ",action_response.json())
                                 action_guid=action['guid']
+                                print("This is action_guid: ",action_guid)
                                 for parameter in action['parameters']:
                                     if(parameter['id']=='position'):
-                                        #print(parameter)
+                                        print("This is parameter: ",parameter)
+                                        #print("This is parameter['id']: ", parameter['id'])
+                                        
+                                        print("This is url pos: ", url_pos)
                                         pos_guid=parameter['value']
+                                        print("This is parameter value: ",parameter['value'])
+                                        print("Self.fleet value: ", self.fleet)
                                         if(self.fleet):
                                             modify_pos_url='http://'+ robot['ip']+'/api/v2.0.0/positions/' +pos_guid
                                         else:
                                              modify_pos_url=self.url+'/positions/' +pos_guid
                                         pos_response=self._put(modify_pos_url,data)
+                                        #print("This is pos_response: ", pos_response) 
                                         if(pos_response):
                                             print('Mission position successfully modified!')
                                             pos_flag=True
-                          
+        
+        #print("This is pos_flag: ", pos_flag)              
         if(pos_flag):
             self.add_mission(index,mission_guid)
             self.ready(index)
@@ -346,7 +362,7 @@ class MIR:
             print("Error updating position in Mission")
     except Exception as e:
         print(str(e))
-        
+        #"8.5982,3.3000,90.9"
             
         
   def _get(self,url):
@@ -354,7 +370,7 @@ class MIR:
             response=requests.get(url,headers=self.headers,timeout=self.timeout)
             response.raise_for_status()
         except HTTPError as http_err:
-            print("HTTP error occurred:"+str(http_err))
+            print("HTTP error occurred (get):"+str(http_err))
             logging.info("HTTP error occurred:"+str(http_err))
             return False
         except Exception as err:
