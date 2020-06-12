@@ -141,7 +141,8 @@ class MIR:
                 #print("Index out of range. Getting all available data")
                 logging.info("Index out of range. Getting all available data")
                 for i in range(self.robot_count):
-                    self._get_data(i)            
+                    self._get_data(i)
+
             else:
                 self._get_data(index)
         return self.robot_data
