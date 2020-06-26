@@ -13,10 +13,40 @@ import pyads
 from FM import MIR
 import time
 import re
+import platform    
+import subprocess 
+
+
+"""
+26th July 2020: Integrated a simple function to detect if MiR is in network before connecting.
+The function can be extended to other network devices.
+"""
 
 
 # add route to remote plc - Only for Linux systems - Not needed now
 # pyads.add_route("192.168.1.100.1.1", "192.168.1.100")
+
+def ping(host):
+    """
+    Returns True if host (str) responds to a ping request.
+    Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
+    Answer provided in: https://stackoverflow.com/questions/2953462/pinging-servers-in-python and
+    adapated to Windows.
+    """
+
+    # Option for the number of packets as a function of
+    param = '-n' if platform.system().lower()=='windows' else '-c'
+
+    # Building the command. Ex: "ping -c 1 google.com"
+    command = ['ping', param, '1', host]
+
+    check = subprocess.Popen(["ping.exe",host],stdout = subprocess.PIPE).communicate()[0]
+
+    if ('unreachable' in str(check)):
+        return 0
+    else:
+        return subprocess.call(command) == 0     
+
 
 def connect_to_plc():
     try:
@@ -52,34 +82,37 @@ def read_plc_commands(plc_object, mir_object):
             # print(plc_cmd)
 
             if plc_cmd == "data":
-                print(mir_object.get_data())
+                # print(mir_object.get_data())
                 data = mir_object.get_data()
                 text = str(data)
                 subtext1 = "{'orientation':"
                 subtext2 = ", 'x':"
                 try:
                     orientation_found = text[text.index(subtext1)+len(subtext1):text.index(subtext2)]
-                    if orientation_found is not None:
-                        print("Orientation string found: ", orientation_found)
+                    # if orientation_found is not None:
+                        # print("Orientation string found: ", orientation_found)
                 except:
-                    print("No orientation found")
+                    orientation_found = None
+                    # print("No orientation found")
                 subtext1 = "'x':"
                 subtext2 = ", 'y':"
                 try:
                     pos_x_found = text[text.index(subtext1)+len(subtext1):text.index(subtext2)]
-                    if pos_x_found is not None:
-                        print("Position in X string found: ", pos_x_found)
+                    # if pos_x_found is not None:
+                        # print("Position in X string found: ", pos_x_found)
                 except:
-                    print("No position in Y found")
+                    pos_x_found = None
+                    # print("No position in Y found")
 
                 subtext1 = "'y':"
                 subtext2 = "}"
                 try:
                     pos_y_found = text[text.index(subtext1)+len(subtext1):text.index(subtext2)]
-                    if pos_y_found is not None:
-                        print("Position in Y string found: ", pos_y_found)
+                    # if pos_y_found is not None:
+                    #     print("Position in Y string found: ", pos_y_found)
                 except:
-                    print("No position in Y found")
+                    pos_y_found = None
+                    # print("No position in Y found")
 
                 subtext1 = "'mission_text': '"
                 subtext2 = "...',"
@@ -95,7 +128,12 @@ def read_plc_commands(plc_object, mir_object):
                                              [float(pos_x_found), float(pos_y_found), float(orientation_found)],
                                              pyads.PLCTYPE_ARR_REAL(3))
                     plc_object.write_by_name("Variables.sAGV_hasMission", has_mission, pyads.PLCTYPE_STRING)
-
+                    # print(mir_object.get_data())
+                else:
+                    try:
+                        plc_object.write_by_name("Variables.sRequestToAGV","idle", pyads.PLCTYPE_STRING)
+                    except:
+                        print("PLC not connected")
             elif plc_cmd == "pause":
                 mir.pause()
                 plc_object.write_by_name("Variables.sRequestToAGV","idle", pyads.PLCTYPE_STRING)
@@ -127,23 +165,30 @@ def read_plc_commands(plc_object, mir_object):
 
 
 def connect_to_mir(plc_object, ip):
-    try:
-        # Create MiR object(s)
-        mir_object = MIR(url="http://"+ip, run_main=False, fleet=False)
-        print("Connected to MiR")
-    except:
-        print("Failed to connect to MiR... \n Retrying in 5 secs...")
-        time.sleep(5)
+    if ping(ip):
+        try:
+            # Create MiR object(s)
+            mir_object = MIR(url="http://"+ip, run_main=False, fleet=False)
+            print("Connected to MiR")
+        except:
+            print("Failed to connect to REST API... \n Retrying in 5 secs...")
+            time.sleep(5)
+            connect_to_mir(plc_object, ip)
+        try:
+            # write status value to Beckhoff
+            plc_object.write_by_name("Variables.bIs_AGV_connected", True, pyads.PLCTYPE_BOOL)
+            print("Variables for AGV status updated in PLC. MiR Connected.")
+        except:
+            print("Variable for AGV status not updated. Check connectivity with PLC.")
+            pass
+    else:
+        print("Failed to connect to the provided MiR IP... \n Retrying in 20 secs...")
+        time.sleep(20)
         connect_to_mir(plc_object, ip)
-    try:
-        # write status value to Beckhoff
-        plc_object.write_by_name("Variables.bIs_AGV_connected", True, pyads.PLCTYPE_BOOL)
-        print("Variables for AGV status updated in PLC. MiR Connected.")
-    except:
-        print("Variable for AGV status not updated. Check connectivity with PLC.")
-        pass
 
     return mir_object
+
+
 
 
 if __name__ == "__main__":

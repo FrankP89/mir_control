@@ -23,7 +23,7 @@ import sys
 logging.basicConfig(filename='FM.log', format='%(asctime)s %(message)s', filemode='w', level=logging.INFO)
 
 class MIR:
-  def __init__(self, url="http://192.168.12.20", authorization="",timeout=5,rate=0.5,fleet=False,run_main=False,mission="move"):
+  def __init__(self, url="http://192.168.1.20", authorization="",timeout=5,rate=0.5,fleet=False,run_main=False,mission="move"):
     
     self.url=url
     self.headers={'Authorization':authorization,'Accept-Language':'en-US','Content-Type': 'application/json'}
