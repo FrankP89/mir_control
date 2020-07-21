@@ -23,7 +23,7 @@ The function can be extended to other network devices.
 """
 
 
-# add route to remote plc - Only for Linux systems - Not needed now
+# add route to remote OPC-UA server - Only for Linux systems - Not needed now
 # pyads.add_route("192.168.1.100.1.1", "192.168.1.100")
 
 def ping(host):
