@@ -1,4 +1,28 @@
-2020-06-26 17:31:33,522 Successfully connected with MIR
-2020-06-26 17:31:33,522 Index out of range. Getting all available data
-2020-06-26 17:31:33,522 Getting data for robot: 0
-2020-06-26 17:31:33,573 Data successfuly retrieved for robot:0
+2020-07-23 17:28:14,238 opening connection
+2020-07-23 17:28:14,240 Thread started
+2020-07-23 17:28:14,240 received header: Header(type:ACK, chunk_type:F, body_size:20, channel:0)
+2020-07-23 17:28:14,244 open_secure_channel
+2020-07-23 17:28:14,246 received header: Header(type:OPN, chunk_type:F, body_size:123, channel:7)
+2020-07-23 17:28:14,248 create_session
+2020-07-23 17:28:14,251 received header: Header(type:MSG, chunk_type:F, body_size:566, channel:7)
+2020-07-23 17:28:14,256 activate_session
+2020-07-23 17:28:14,258 received header: Header(type:MSG, chunk_type:F, body_size:84, channel:7)
+2020-07-23 17:28:14,319 Successfully connected with MIR
+2020-07-23 17:28:14,320 Index out of range. Getting all available data
+2020-07-23 17:28:14,320 Getting data for robot: 0
+2020-07-23 17:28:14,351 Data successfuly retrieved for robot:0
+2020-07-23 17:28:14,395 Successfully connected with MIR
+2020-07-23 17:28:14,395 Index out of range. Getting all available data
+2020-07-23 17:28:14,395 Getting data for robot: 0
+2020-07-23 17:28:14,435 Data successfuly retrieved for robot:0
+2020-07-23 17:28:14,440 read
+2020-07-23 17:28:14,443 received header: Header(type:MSG, chunk_type:F, body_size:54, channel:7)
+2020-07-23 17:28:14,482 close_session
+2020-07-23 17:28:14,484 received header: Header(type:MSG, chunk_type:F, body_size:40, channel:7)
+2020-07-23 17:28:14,487 close_secure_channel
+2020-07-23 17:28:14,488 Request to close socket received
+2020-07-23 17:28:14,488 Socket closed, waiting for receiver thread to terminate...
+2020-07-23 17:28:14,488 Socket has closed connection
+2020-07-23 17:28:14,488 Cancelling request 6
+2020-07-23 17:28:14,488 Thread ended
+2020-07-23 17:28:14,489 Done closing socket: Receiving thread terminated, socket disconnected

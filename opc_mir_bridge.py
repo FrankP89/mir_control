@@ -1,5 +1,5 @@
 """
-This variation of code enables the communication with the MiR AGV plugin and the SMG 5G server.
+This variation of code enables the communication with the MiR AMR plugin and the SMG 5G server.
 
 The communication is performed through OPC-UA. For this proposed architecture, the NUC will be the opc_client.
 
@@ -14,6 +14,7 @@ import time
 import re
 import platform
 import subprocess
+import os
 
 """
  Due to the nature of the API, we can't overload it with many requests at the same time.
@@ -29,7 +30,12 @@ import subprocess
     * reading_flag goes back up
 """
 
+###############################################################################
+ip_opc_server_address = "127.0.0.1"
+opc_port_server_no = 4841
 
+mir_ip = "192.168.12.20"
+mir_port = 520
 ###############################################################################
 
 # Priority variables #
@@ -57,7 +63,7 @@ get_AMR_odom = [], []
 ########## Connect function ##################################################
 ##############################################################################
 
-# Pinging function to check if AGV is there #
+# Pinging function to check if AMR is there #
 def ping(host):
     """
     Returns True if host (str) responds to a ping request.
@@ -72,9 +78,15 @@ def ping(host):
     # Building the command. Ex: "ping -c 1 google.com"
     command = ['ping', param, '1', host]
 
-    check = subprocess.Popen(["ping.exe", host], stdout=subprocess.PIPE).communicate()[0]
+    if platform.system().lower() == 'windows':
+        check = subprocess.Popen(["ping.exe", host], stdout=subprocess.PIPE).communicate()[0]
+    else:
+        print ("Pinging...".format(host))
+        check = os.system("ping -c 1 " + host)
+        
+        #check = subprocess.Popen(["ping", host], stdout=subprocess.PIPE).communicate()[0]
 
-    if 'unreachable' in str(check):
+    if ('unreachable' in str(check)) or (check == 1):
         return 0
     else:
         return subprocess.call(command) == 0
@@ -85,21 +97,27 @@ def ping(host):
 
 # Connect to OPC server #
 def connect_to_opc_server(ip, port):
-    # Valid pattern for accepting IP addresses
-    valid_pattern = r"((^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)|(^[a-zA-Z\.]+[a-zA-Z\.]+[a-zA-Z]$))"
-    if re.match(valid_pattern, ip):
-        print("Connecting to OPC-UA server in " + ip + " ...")
-        url = 'opc.tcp://' + str(ip) + ':' + str(port)
-        client = Client(url)
-        # client.set_user("user1")
-        # client.set_password("pw1")
-        # client.set_security_string("Basic256Sha256,SignAndEncrypt,certificate-example.der,private-key-example.pem")
-        client.connect()
-        print("Connected!")
-        return client
-    else:
-        print("Error!", "Incorrect IP address/Domain!")
-        client = None
+    try:
+        # Valid pattern for accepting IP addresses
+        valid_pattern = r"((^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)|(^[a-zA-Z\.]+[a-zA-Z\.]+[a-zA-Z]$))"
+        if re.match(valid_pattern, ip):
+            print("Connecting to OPC-UA server in " + ip + " ...")
+            url = 'opc.tcp://' + str(ip) + ':' + str(port)
+            client = Client(url)
+            # client.set_user("user1")
+            # client.set_password("pw1")
+            # client.set_security_string("Basic256Sha256,SignAndEncrypt,certificate-example.der,private-key-example.pem")
+            client.connect()
+            print("Connected!")
+            return client
+        else:
+            print("Error!", "Incorrect IP address/Domain!")
+            client = None
+    except:
+        print ("Failed to connect. Retrying in 10 Seconds...")
+        time.sleep(10)
+        connect_to_opc_server(ip=ip, port=port)
+
     return client
 
 
@@ -133,9 +151,9 @@ def connect_to_mir(ip):
             connect_to_mir(ip)
         try:
             # write status value to OPC-UA server
-            print("Variables for AGV status updated in OPC-UA server. MiR Connected.")
+            print("Variables for AMR status updated in OPC-UA server. MiR Connected.")
         except:
-            print("Variable for AGV status not updated. Check connectivity with OPC-UA server.")
+            print("Variable for AMR status not updated. Check connectivity with OPC-UA server.")
             pass
     else:
         print("Failed to connect to the provided MiR IP... \n Retrying in 20 secs...")
@@ -212,10 +230,10 @@ def read_opc_commands(opc_client, mir):
                 mir.ready()
                 set_send_action_to_AMR = "idle"
             elif set_send_action_to_AMR == "go_to":
-                agv_goto_pos = set_AMR_pos
-                mir.move_to(0, agv_goto_pos)
+                amr_goto_pos = set_AMR_pos
+                mir.move_to(0, amr_goto_pos)
                 set_send_action_to_AMR = "idle"
-                print("Robot moving to: ", agv_goto_pos)
+                print("Robot moving to: ", amr_goto_pos)
             elif set_send_action_to_AMR == "idle":
                 pass
             else:
@@ -227,7 +245,7 @@ def read_opc_commands(opc_client, mir):
     except KeyboardInterrupt:
         print("Program stopped by user.")
         # write status value to Beckhoff
-        print("Variables for AGV status updated in PLC. MiR Disconnected.")
+        print("Variables for AMR status updated in PLC. MiR Disconnected.")
 
     except Exception as e:
         print("Error occurred during selection of command: ", str(e))
@@ -249,36 +267,36 @@ def ua_info_set_update(ready):
     if (ready):
         # Robot target variables for OPC-UA
         # Get info for set_send_data
-        opc_set_send_action_to_AMR = opc_client.get_node("ns=4;s=MiRVariables.sSet_send_action_to_AMR")
+        opc_set_send_action_to_AMR = opc_client.get_node("ns=2;s=MiRVariables.sSet_send_action_to_AMR")
 
         # Robot and sensor get data
-        opc_get_AMR_status = opc_client.get_node("ns=4;s=MiRVariables.bGet_AMR_status")
+        opc_get_AMR_status = opc_client.get_node("ns=2;s=MiRVariables.bGet_AMR_status")
 
-        opc_get_AMR_battery_life = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_battery_life")
-        opc_get_AMR_pos_x = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_pos_x")
-        opc_get_AMR_pos_y = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_pos_y")
-        opc_get_AMR_pos_theta = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_pos_theta")
+        opc_get_AMR_battery_life = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_battery_life")
+        opc_get_AMR_pos_x = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_pos_x")
+        opc_get_AMR_pos_y = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_pos_y")
+        opc_get_AMR_pos_theta = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_pos_theta")
 
-        opc_get_AMR_imu_orient_x = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_imu_orient_x")
-        opc_get_AMR_imu_orient_y = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_imu_orient_y")
-        opc_get_AMR_imu_orient_z = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_imu_orient_z")
-        opc_get_AMR_imu_orient_w = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_imu_orient_w")
+        opc_get_AMR_imu_orient_x = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_imu_orient_x")
+        opc_get_AMR_imu_orient_y = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_imu_orient_y")
+        opc_get_AMR_imu_orient_z = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_imu_orient_z")
+        opc_get_AMR_imu_orient_w = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_imu_orient_w")
 
-        opc_get_AMR_imu_ang_vel_x = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_imu_ang_vel_x")
-        opc_get_AMR_imu_ang_vel_y = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_imu_ang_vel_y")
-        opc_get_AMR_imu_ang_vel_z = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_imu_ang_vel_z")
+        opc_get_AMR_imu_ang_vel_x = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_imu_ang_vel_x")
+        opc_get_AMR_imu_ang_vel_y = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_imu_ang_vel_y")
+        opc_get_AMR_imu_ang_vel_z = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_imu_ang_vel_z")
 
-        opc_get_AMR_imu_lin_acc_x = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_imu_lin_acc_x")
-        opc_get_AMR_imu_lin_acc_y = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_imu_lin_acc_y")
-        opc_get_AMR_imu_lin_acc_z = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_imu_lin_acc_z")
+        opc_get_AMR_imu_lin_acc_x = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_imu_lin_acc_x")
+        opc_get_AMR_imu_lin_acc_y = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_imu_lin_acc_y")
+        opc_get_AMR_imu_lin_acc_z = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_imu_lin_acc_z")
 
-        opc_get_AMR_odom_pose_lin_x = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_odom_pose_lin_x")
-        opc_get_AMR_odom_pose_lin_y = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_odom_pose_lin_y")
-        opc_get_AMR_odom_pose_lin_z = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_odom_pose_lin_z")
+        opc_get_AMR_odom_pose_lin_x = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_odom_pose_lin_x")
+        opc_get_AMR_odom_pose_lin_y = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_odom_pose_lin_y")
+        opc_get_AMR_odom_pose_lin_z = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_odom_pose_lin_z")
 
-        opc_get_AMR_odom_twist_orien_x = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_odom_twist_orien_x")
-        opc_get_AMR_odom_twist_orien_y = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_odom_twist_orien_y")
-        opc_get_AMR_odom_twist_ang_z = opc_client.get_node("ns=4;s=MiRVariables.fGet_AMR_odom_twist_ang_z")
+        opc_get_AMR_odom_twist_orien_x = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_odom_twist_orien_x")
+        opc_get_AMR_odom_twist_orien_y = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_odom_twist_orien_y")
+        opc_get_AMR_odom_twist_ang_z = opc_client.get_node("ns=2;s=MiRVariables.fGet_AMR_odom_twist_ang_z")
 
         # Set Robot variables 
         dv = ua.DataValue(ua.Variant(set_send_action_to_AMR, ua.VariantType.String))
@@ -343,29 +361,31 @@ def ua_info_get_update(ready):
     """
 
     if ready:
-
+        print("Ready 1")
         # Robot set data
-        opc_set_action_to_AMR = opc_client.get_node("ns=4;s=MiRVariables.sSet_action_to_AMR")
+        opc_set_action_to_AMR = opc_client.get_node("ns=2;s=MiRVariables.sSet_action_to_AMR")
         set_send_action_to_AMR = opc_set_action_to_AMR.get_value()
 
         if (set_send_action_to_AMR != "data"):
             writing_flag = True
             reading_flag = False
+        print("Ready 2")
 
-        opc_set_AMR_e_stop = opc_client.get_node("ns=4;s=MiRVariables.bSet_AMR_e_stop")
+        opc_set_AMR_e_stop = opc_client.get_node("ns=2;s=MiRVariables.bSet_AMR_e_stop")
         set_AMR_e_stop = opc_set_AMR_e_stop.get_value()
-        opc_set_AMR_pos_x = opc_client.get_node("ns=4;s=MiRVariables.fSet_AMR_pos_x")
+        opc_set_AMR_pos_x = opc_client.get_node("ns=2;s=MiRVariables.fSet_AMR_pos_x")
         set_AMR_pos[0] = opc_set_AMR_pos_x.get_value()
-        opc_set_AMR_pos_y = opc_client.get_node("ns=4;s=MiRVariables.fSet_AMR_pos_y")
+        opc_set_AMR_pos_y = opc_client.get_node("ns=2;s=MiRVariables.fSet_AMR_pos_y")
         set_AMR_pos[1] = opc_set_AMR_pos_y.get_value()
-        opc_set_AMR_pos_theta = opc_client.get_node("ns=4;s=MiRVariables.fSet_AMR_pos_theta")
+        opc_set_AMR_pos_theta = opc_client.get_node("ns=2;s=MiRVariables.fSet_AMR_pos_theta")
         set_AMR_pos[2] = opc_set_AMR_pos_theta.get_value()
+        print("Ready 3")
 
-        opc_set_pause_AMR = opc_client.get_node("ns=4;s=MiRVariables.bSet_pause_AMR")
+        opc_set_pause_AMR = opc_client.get_node("ns=2;s=MiRVariables.bSet_pause_AMR")
         opc_set_pause_AMR.get_value()
-        opc_set_ready_AMR = opc_client.get_node("ns=4;s=MiRVariables.bSet_ready_AMR")
+        opc_set_ready_AMR = opc_client.get_node("ns=2;s=MiRVariables.bSet_ready_AMR")
         opc_set_ready_AMR.get_value()
-
+        print("Ready 4")
 ###############################################################################
 ##########End of UA information update#################
 ###############################################################################
@@ -381,9 +401,9 @@ if __name__ == "__main__":
     Variables to read and write as of today (21st July 2020)
 
     bIs_AMR_connected	AT %I*		: BOOL;
-    sAGV_ip_address 	AT %Q*		: STRING;
-    sRequestToAGV		AT %Q*		: STRING;
-    arrfAGV_Pos			AT %Q*		: ARRAY[1..3] OF REAL;
+    sAMR_ip_address 	AT %Q*		: STRING;
+    sRequestToAMR		AT %Q*		: STRING;
+    arrfAMR_Pos			AT %Q*		: ARRAY[1..3] OF REAL;
     bMissionComplete	AT %I*		: BOOL;
 
 
@@ -398,20 +418,16 @@ if __name__ == "__main__":
     """
 
     # Connect to OPC-UA server
-    try:
-        ip_opc_server_address = "192.168.1.200"
-        opc_port_server_no = 40880
+    try:        
         opc_client = connect_to_opc_server(ip=ip_opc_server_address, port=opc_port_server_no)
     except:
         # Closing communication with OPC-UA server
-        disconnect_from_opc_server(opc_client)
+        print ("Unable to connect to OPC-UA server")
 
-    # Connect to MiR AMR
-    mir_ip = "192.168.1.20"
-    mir_port = 520
+    # Connect to MiR AMR    
     mir = connect_to_mir(ip=mir_ip)
 
-    # Connect to MiR AGV
+    # Connect to MiR AMR
     mir = connect_to_mir(mir_ip)
 
     # Read the commands from OPC-UA server
