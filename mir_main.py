@@ -17,8 +17,8 @@ def display_menu():
     print("----------------------")
     
 if __name__=="__main__":
-    # mir=MIR(url='http://192.168.12.20',run_main=False,fleet=False)
-    mir=MIR(url='http://192.168.1.20',run_main=False,fleet=False)
+    mir=MIR(url='http://192.168.12.20',run_main=False,fleet=False)
+    # mir=MIR(url='http://192.168.1.20',run_main=False,fleet=False)
     try:
         while True:
             display_menu()

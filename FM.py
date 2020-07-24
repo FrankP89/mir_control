@@ -23,7 +23,7 @@ import sys
 logging.basicConfig(filename='FM.log', format='%(asctime)s %(message)s', filemode='w', level=logging.INFO)
 
 class MIR:
-  def __init__(self, url="http://192.168.1.20", authorization="",timeout=5,rate=0.5,fleet=False,run_main=False,mission="move"):
+  def __init__(self, url="http://192.168.12.20", authorization="",timeout=5,rate=0.5,fleet=False,run_main=False,mission="move"):
     
     self.url=url
     self.headers={'Authorization':authorization,'Accept-Language':'en-US','Content-Type': 'application/json'}
@@ -313,20 +313,26 @@ class MIR:
         self.reset_queue(index)
         data= {'orientation':pose[2],'pos_x':pose[0],'pos_y':pose[1]}
         response=self._get(url)
-        #print("This is the response: ", response.json())
+        # print("This is the response: ", response.json())
         if(response):
             for mission in response.json():
                 #find the active mission guid
                 print("This is mission: ",mission) 
-                print("This is self mission: ",self.mission)                
+                #print("This is self mission: ",self.mission)                
                 if(mission['name']==self.mission):
                     
                     mission_guid=mission['guid']
                     print("This is mission[guid]: ",mission_guid) 
                     url_pos = url+"/positions"
+                    
                     url=url+"/"+mission_guid+"/actions"
+                    print(url)
                     #find the action guid containing move command
+                    # if (self._get(url)) == False:
+                    #     pass
+                    # else:
                     action_response=self._get(url)
+                    
                     print("This is action response: ",action_response.json())
                     if(action_response):
                         for action in action_response.json():
@@ -359,6 +365,7 @@ class MIR:
         if(pos_flag):
             self.add_mission(index,mission_guid)
             self.ready(index)
+            print("Mission Added")          
         else:
             print("Error updating position in Mission")
     except Exception as e:
