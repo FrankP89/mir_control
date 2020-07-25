@@ -8,6 +8,7 @@ Maintainer and creator: Walter Frank Pintor Ortiz, walterpintor@gmail.com
 Maintainer: Lim GuoWei, nnn@xxx.com
 """
 
+import sys, getopt
 from opcua import Client, ua
 from FM import MIR
 import time
@@ -30,9 +31,14 @@ import os
     * reading_flag goes back up
 """
 
+print ('Welcome to the OPC-UA bridge for MiR \nFor defined IP addresses, utilize the following arguments')
+print ('server.py --opc_ip <opc_ip> --opc_port <opc_port> --mir_ip <mir_ip> --mir_port <mir_port>')
+time.sleep(2)
+
+
 ###############################################################################
 ip_opc_server_address = "127.0.0.1"
-opc_port_server_no = 4841
+opc_port_server_no = 4840
 
 mir_ip = "192.168.12.20"
 mir_port = 520
@@ -57,6 +63,53 @@ get_battery_life = 0.0
 get_AMR_pos = [0,0,0]
 get_AMR_imu = [[0,0,0,0],[0,0,0,0],[0,0,0,0]]
 get_AMR_odom = [[0,0,0,0],[0,0,0,0]]
+
+
+##############################################################################
+########## Check input function ##############################################
+##############################################################################
+
+def check_arguments(argv):
+    global ip_opc_server_address
+    global opc_port_server_no
+    global mir_ip
+    global mir_port
+    opc_ip_read = ip_opc_server_address
+    opc_port_read = opc_port_server_no
+    mir_ip_read = mir_ip
+    mir_port_read = mir_port
+
+    try:
+        opts, args = getopt.getopt(argv,"hi:o:",["opc_ip=","opc_port=","mir_ip=","mir_port="])
+    except getopt.GetoptError:
+        print ('server.py --opc_ip <opc_ip> --opc_port <opc_port> --mir_ip <mir_ip> --mir_port <mir_port>')
+        sys.exit(2)
+    for opt, arg in opts:        
+        if opt == '-h':
+            print ('server.py --opc_ip <opc_ip> --opc_port <opc_port> --mir_ip <mir_ip> --mir_port <mir_port>')
+            sys.exit()
+        elif opt in ("-opc_ip", "--opc_ip"):            
+            opc_ip_read = str(arg)
+        elif opt in ("-opc_port", "--opc_port"):
+            opc_port_read = arg
+        elif opt in ("-mir_ip", "--mir_ip"):            
+            mir_ip_read = str(arg)
+        elif opt in ("-mir_port", "--mir_port"):
+            mir_port_read = arg
+
+    print ('OPC-UA IP provided is: ', opc_ip_read)
+    print ('The OPC-UA port is "', opc_port_read)
+    print ('MiR IP provided is: ', mir_ip_read)
+    print ('The MiR port is "', mir_port_read)
+    ip_opc_server_address = opc_ip_read
+    opc_port_server_no = opc_port_read
+    mir_ip = mir_ip_read
+    mir_port = mir_port_read
+
+##############################################################################
+########## End of Check input function #######################################
+##############################################################################
+
 
 
 ##############################################################################
@@ -479,6 +532,9 @@ if __name__ == "__main__":
     AT %I* indicates input in the OPC-UA server side, meaning that we must write from here.
     On the contrary, %Q* indicates and output and we must subscribe to it.
     """
+
+    # Check if arguments were given at the start
+    check_arguments(sys.argv[1:])
 
     # Connect to OPC-UA server
     try:        
