@@ -82,11 +82,11 @@ def check_arguments(argv):
     try:
         opts, args = getopt.getopt(argv,"hi:o:",["opc_ip=","opc_port=","mir_ip=","mir_port="])
     except getopt.GetoptError:
-        print ('server.py --opc_ip <opc_ip> --opc_port <opc_port> --mir_ip <mir_ip> --mir_port <mir_port>')
+        print ('opc_mir_bridge.py --opc_ip <opc_ip> --opc_port <opc_port> --mir_ip <mir_ip> --mir_port <mir_port>')
         sys.exit(2)
     for opt, arg in opts:        
         if opt == '-h':
-            print ('server.py --opc_ip <opc_ip> --opc_port <opc_port> --mir_ip <mir_ip> --mir_port <mir_port>')
+            print ('opc_mir_bridge.py --opc_ip <opc_ip> --opc_port <opc_port> --mir_ip <mir_ip> --mir_port <mir_port>')
             sys.exit()
         elif opt in ("-opc_ip", "--opc_ip"):            
             opc_ip_read = str(arg)
