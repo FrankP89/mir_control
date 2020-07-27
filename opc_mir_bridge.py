@@ -422,7 +422,7 @@ def read_opc_commands(opc_client, mir):
                         print("No position in X found")
 
                 subtext1 = "'y':"
-                subtext2 = ", u'x':"
+                subtext2 = "}"
                 try:
                     pos_y_found = text[text.index(subtext1) + len(subtext1):text.index(subtext2)]
                     print("pos y: ", pos_y_found)
