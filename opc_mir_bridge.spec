@@ -4,10 +4,10 @@ block_cipher = None
 
 
 a = Analysis(['opc_mir_bridge.py'],
-             pathex=['/home/frank/Desktop/mir_control/mir_control'],
+             pathex=['C:\\Users\\walter-frank\\Documents\\MiR_Bridge\\mir_control'],
              binaries=[],
              datas=[],
-             hiddenimports=[],
+             hiddenimports=['upcua'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
