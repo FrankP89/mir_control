@@ -1,11 +1,9 @@
-2020-08-07 17:47:18,524 opening connection
-2020-08-07 17:47:18,542 Thread started
-2020-08-07 17:47:18,559 received header: Header(type:b'ACK', chunk_type:b'F', body_size:20, channel:0)
-2020-08-07 17:47:18,560 open_secure_channel
-2020-08-07 17:47:18,579 received header: Header(type:b'OPN', chunk_type:b'F', body_size:123, channel:69)
-2020-08-07 17:47:18,581 create_session
-2020-08-07 17:47:18,597 received header: Header(type:b'MSG', chunk_type:b'F', body_size:618, channel:69)
-2020-08-07 17:47:18,601 activate_session
-2020-08-07 17:47:18,618 received header: Header(type:b'MSG', chunk_type:b'F', body_size:84, channel:69)
-2020-08-07 17:49:48,257 Socket has closed connection
-2020-08-07 17:49:48,257 Thread ended
+2020-08-11 10:14:59,411 opening connection
+2020-08-11 10:14:59,413 Thread started
+2020-08-11 10:14:59,413 received header: Header(type:b'ACK', chunk_type:b'F', body_size:20, channel:0)
+2020-08-11 10:14:59,414 open_secure_channel
+2020-08-11 10:14:59,414 received header: Header(type:b'OPN', chunk_type:b'F', body_size:124, channel:2916853466)
+2020-08-11 10:14:59,415 create_session
+2020-08-11 10:14:59,415 received header: Header(type:b'MSG', chunk_type:b'F', body_size:19172, channel:2916853466)
+2020-08-11 10:14:59,418 activate_session
+2020-08-11 10:14:59,419 received header: Header(type:b'MSG', chunk_type:b'F', body_size:84, channel:2916853466)
